@@ -2,7 +2,7 @@ import streamlit as st
 import requests
 
 # The URL for FastAPI backend is running
-API_URL = ""https://mlop-audio-backend.onrender.com/predict""
+API_URL = "https://mlop-audio-backend.onrender.com/predict"
 
 
 st.set_page_config(page_title="TESS Audio AI", layout="wide", initial_sidebar_state="collapsed")

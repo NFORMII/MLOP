@@ -1,79 +1,78 @@
-from fastapi import FastAPI, UploadFile, File, BackgroundTasks
-from fastapi.responses import JSONResponse
+from fastapi import FastAPI, File, UploadFile, BackgroundTasks
 import time
 import shutil
 import os
 
-from src.preprocessing import preprocess_image
-from src.prediction import predict
 
-app = FastAPI(title="Cassava Disease ML Pipeline API")
-#calculate latency
-START_TIME = time.time()
+# Import the logic from your separated modules
+from src.prediction import make_prediction
+from src.model import retrain_pipeline 
+
+# Initialize the Web Server
+app = FastAPI(title="TESS MLOps Pipeline API")
+START_TIME = time.time() # Tracks server uptime
 
 @app.get("/")
 def read_root():
-    return {"message": "Welcome to the Cassava ML Pipeline API. Go to /docs to test it out!"}
+    return {"message": "Welcome to the Emotion Recognition API! Go to /docs to test it."}
 
 @app.get("/health")
 def health_check():
-    """Returns the API status and uptime (Assignment Requirement)"""
-    uptime_seconds = time.time() - START_TIME
-    uptime_hours = round(uptime_seconds / 3600, 4)
+    """Rubric Requirement: Model up-time and health status"""
+    uptime_seconds = int(time.time() - START_TIME)
     return {
-        "status": "online", 
-        "uptime_seconds": round(uptime_seconds, 2),
-        "uptime_hours": uptime_hours
+        "status": "Healthy 🟢",
+        "uptime_seconds": uptime_seconds,
+        "uptime_minutes": round(uptime_seconds / 60, 2)
     }
 
 @app.post("/predict")
-async def make_prediction(file: UploadFile = File(...)):
-    """Accepts an image file and returns the model's prediction"""
+async def predict_emotion(file: UploadFile = File(...)):
+    """Rubric Requirement: Predict one datapoint from sound"""
+    temp_file_path = f"temp_{file.filename}"
+    
+    # 1. Save the uploaded file temporarily
+    with open(temp_file_path, "wb") as buffer:
+        shutil.copyfileobj(file.file, buffer)
+    
     try:
-        image_bytes = await file.read()
+        # 2. Delegate to prediction.py (which should handle preprocessing inside it)
+        result = make_prediction(temp_file_path)
         
-        #preprocess the image
-        processed_tensor = preprocess_image(image_bytes)
-        
-        #pass to the model for prediction
-        predicted_class, confidence = predict(processed_tensor)
-        
-        return {
-            "filename": file.filename,
-            "prediction": predicted_class,
-            "confidence": round(confidence, 4)
-        }
-    except Exception as e:
-        return JSONResponse(status_code=500, content={"message": f"Prediction failed: {str(e)}"})
-    
-
-# this function simulates a background retraining job. in a full production environment, this would call logic in src/model.py
-    
-def run_retraining_job():
-    print(">>> BACKGROUND TASK: Retraining triggered! Processing new data...")
-    time.sleep(10)
-    print(">>> BACKGROUND TASK: Retraining complete. New model saved.")
+        # Ensure result is a dictionary
+        if isinstance(result, dict):
+            return {
+                "filename": file.filename,
+                "predicted_emotion": result.get("predicted_emotion"),
+                "confidence": str(round(result.get("confidence") * 100, 2)) + '%'
+            }
+        else:
+            return {
+                "filename": file.filename,
+                "error": "Invalid result format from prediction model"
+            }
+    finally:
+        # 3. Clean up the temp file
+        if os.path.exists(temp_file_path):
+            os.remove(temp_file_path)
 
 @app.post("/retrain")
-async def trigger_retrain(background_tasks: BackgroundTasks, files: list[UploadFile] = File(...)):
-    #Accepts bulk images, saves them, and triggers retraining
+async def trigger_retraining(background_tasks: BackgroundTasks, file: UploadFile = File(...)):
+    """Rubric Requirement: Bulk data upload and trigger retraining"""
+    if not file.filename.endswith('.zip'):
+        return {"error": "Please upload a .zip file containing folders of audio files."}
+        
+    temp_zip_path = f"temp_bulk_{file.filename}"
     
-    upload_dir = "data/train/uploaded_retrain_data"
-    os.makedirs(upload_dir, exist_ok=True)
+    # 1. Save the uploaded zip temporarily
+    with open(temp_zip_path, "wb") as buffer:
+        shutil.copyfileobj(file.file, buffer)
     
-    saved_files = 0
-    #save all uploaded files to the server
-    for file in files:
-        file_location = os.path.join(upload_dir, file.filename)
-        with open(file_location, "wb+") as file_object:
-            shutil.copyfileobj(file.file, file_object)
-        saved_files += 1
-    
-    #trigger the training function in the background so the user doesn't have to wait
-    background_tasks.add_task(run_retraining_job)
+    # 2. Send the heavy lifting to model.py via background tasks
+    # We pass the temp_zip_path to retrain_pipeline, which will unzip and train
+    background_tasks.add_task(retrain_pipeline, temp_zip_path)
     
     return {
-        "message": "Retraining successfully triggered.",
-        "files_uploaded": saved_files,
-        "status": "Training in background..."
+        "message": "Retraining successfully triggered! The AI is updating in the background.",
+        "status": "Processing"
     }

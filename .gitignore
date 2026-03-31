@@ -1,0 +1,25 @@
+# --- Python Environment ---
+venv/
+env/
+.env
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# --- Jupyter Notebooks ---
+.ipynb_checkpoints/
+
+# --- Audio Dataset (Do not push 400MB of wav files!) ---
+data/
+temp_test_audio.wav
+
+# --- Models & Artifacts ---
+# Only keep the final production models, ignore temp training logs
+.pytest_cache/
+.vscode/
+*.log
+
+# --- OS Specific ---
+.DS_Store
+Thumbs.db

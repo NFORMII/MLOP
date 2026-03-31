@@ -1,0 +1,10 @@
+version: '3.8'
+
+services:
+  api:
+    build: .
+    ports:
+      - "8000-8010:8000" #map traffic to any available container
+    deploy:
+      mode: replicated
+      replicas: 3 #load balancing

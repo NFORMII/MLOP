@@ -1,0 +1,13 @@
+{
+	"folders": [
+		{
+			"name": "mlopp",
+			"path": "../.."
+		},
+		{
+			"name": "src",
+			"path": "../../../MLOP/MLOP/src"
+		}
+	],
+	"settings": {}
+}

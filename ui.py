@@ -4,13 +4,14 @@ import librosa
 import librosa.display
 import matplotlib.pyplot as plt
 import numpy as np
+import os
 
-# 1. Configuration & Constants
-API_URL = 'http://127.0.0.1:8000' # FastAPI backend URL
+#fastAPI backend URL
+API_URL = 'http://127.0.0.1:8000' 
 
 st.set_page_config(page_title="TESS Audio AI", layout="wide", initial_sidebar_state="collapsed")
 
-# 2. Custom Styling (Gold & Black Theme)
+
 custom_css = """
 <style>
     .stApp {
@@ -80,7 +81,6 @@ st.title("🎧 Speech Emotion Recognition Pipeline")
 st.markdown("*A professional MLOps architecture analyzing the Toronto Emotional Speech Set.*")
 st.markdown("---")
 
-# 3. Create Tabs
 tab1, tab2, tab3, tab4 = st.tabs([
     "🔮 Predict Emotion", 
     "📊 Data Visualizations", 
@@ -88,8 +88,7 @@ tab1, tab2, tab3, tab4 = st.tabs([
     "🏥 System Health"
 ])
 
-# --- Tab 1: Prediction ---
-with tab1:
+with tab1:#prediction tab
     st.header("Predict a Single Audio File")
     st.write("Upload a .wav file to hear it and predict the emotion.")
     
@@ -112,12 +111,11 @@ with tab1:
                 except Exception as e:
                     st.error(f"Failed to connect to backend server. Error: {e}")
 
-# --- Tab 2: Data Visualizations (The "Sound DNA" Tab) ---
+#visualizations tab
 with tab2:
-    st.header("Feature Interpretations")
-    st.write("Explore the mathematical features extracted from raw audio waves.")
+    st.header("Feature Interpretations & Model Performance")
     
-    st.markdown("---")
+   
     st.subheader("🎵 Dynamic Audio Analysis")
     st.markdown("Upload any audio file to see its 'Sound DNA' (Waveform, Spectrogram, and MFCCs).")
 
@@ -126,9 +124,7 @@ with tab2:
     if eda_file is not None:
         y, sr = librosa.load(eda_file, duration=2.5)
 
-        # Row 1: Waveform & Spectrogram
         col1, col2 = st.columns(2)
-
         with col1:
             st.subheader("1. Waveform")
             fig_wave, ax_wave = plt.subplots(figsize=(10, 5))
@@ -137,7 +133,6 @@ with tab2:
             fig_wave.patch.set_facecolor('#0a0a0a')
             ax_wave.set_facecolor('#0a0a0a')
             st.pyplot(fig_wave)
-            st.caption("Raw physical vibration and volume levels.")
 
         with col2:
             st.subheader("2. Mel-Spectrogram")
@@ -149,90 +144,117 @@ with tab2:
             ax_spec.set_title("Frequency Intensity", color="white")
             fig_spec.patch.set_facecolor('#0a0a0a')
             st.pyplot(fig_spec)
-            st.caption("The 'colors' and energy of the voice frequencies.")
 
         st.divider()
 
-        # Row 2: MFCCs (The specialized feature)
-        st.subheader("3. 🧬 Vocal Tract Fingerprint (MFCCs)")
-        st.write("These coefficients represent the biological shape of the vocal tract during speech.")
-        
+        # MFCCs
+        st.subheader("3.Vocal Tract Fingerprint (MFCCs)")
         fig_mfcc, ax_mfcc = plt.subplots(figsize=(12, 4))
-        # Extract 40 MFCCs to match our training pipeline
         mfccs = librosa.feature.mfcc(y=y, sr=sr, n_mfcc=40)
         img_mfcc = librosa.display.specshow(mfccs, x_axis='time', ax=ax_mfcc)
         plt.colorbar(img_mfcc, ax=ax_mfcc)
         ax_mfcc.set_title("MFCC Coefficients", color="white")
         fig_mfcc.patch.set_facecolor('#0a0a0a')
         st.pyplot(fig_mfcc)
-        st.caption("This unique pattern is what the AI model actually 'reads' to classify emotion.")
 
-        st.success("✅ Features successfully extracted and visualized!")
-    
+        st.success("Features successfully extracted and visualized!")
     else:
         st.info("Please upload a .wav file in the box above to generate visuals.")
     
-    # Feature Explanations (Gold Cards)
+    #feature explanations
+
     st.markdown("""
         <div class="gold-card">
-            <div class="gold-card-title">Understanding the Waveform</div>
+            <div class="gold-card-title">1. The Waveform (captures for energy and pacing)</div>
             <div class="gold-card-text">
-                Angry voices show jagged, high-energy peaks, while Sad/Neutral voices are often compressed and lower in volume.
+                <b>Concept:</b> This represents the raw physical amplitude of the sound wave over time.<br>
+                <b>story it tells:</b> High-arousal emotions like Anger or Happiness produce sharp, jagged amplitude peaks with sudden bursts of acoustic energy.
+                In contrast, Sadness yields a smoother, compressed envelope with much lower overall physical power and slower pacing.
             </div>
         </div>
+        
         <div class="gold-card">
-            <div class="gold-card-title">Understanding the Spectrogram</div>
+            <div class="gold-card-title">2. The Mel-Spectrogram (captured for the frequency & timbre)</div>
             <div class="gold-card-text">
-                Higher frequencies (brighter colors) indicate excitement or distress, while lower clusters suggest calm or sadness.
+                <b>Concept:</b> A visual heat-map of frequency intensities, scaled logarithmically to match how human ears actually perceive sound.<br>
+                <b>Story it tells:</b> It reveals the 'color' and pitch variations of the voice. Excitement or distress lights up the higher frequency bands (brighter colors), while calm or sad voices keep their acoustic energy tightly clustered in the lower, darker frequency ranges.
             </div>
         </div>
+        
         <div class="gold-card">
-            <div class="gold-card-title">Understanding MFCCs</div>
+            <div class="gold-card-title">3. MFCCs (captures the vocal tract geometry)</div>
             <div class="gold-card-text">
-                MFCCs isolate the physical 'tightness' of the throat and mouth, allowing the AI to detect emotion regardless of background noise.
+                <b>Concept:</b> Mel-Frequency Cepstral Coefficients act as a mathematical "fingerprint" of the speaker's vocal tract.<br>
+                <b>Story it tells:</b> By mathematically stripping away background noise and base pitch, MFCCs isolate the physical shape of the throat, tongue, and lips. It allows the AI to detect the biological "tightness" of an angry throat versus the relaxed, sluggish articulation of a sad voice. This makes it our model's most critical feature.
             </div>
         </div>
     """, unsafe_allow_html=True)
 
-# --- Tab 3: Retraining ---
+    st.divider()
+
+    st.subheader("📉 Global Model Evaluation Metrics")
+    st.write("Official performance results from the last training session.")
+    
+    current_dir = os.path.dirname(os.path.abspath(__file__))
+
+    evaluation_img_path = os.path.join(current_dir, "assets", "model_evaluation.png")
+    
+    if os.path.exists(evaluation_img_path):
+        st.image(evaluation_img_path, caption="Confusion Matrix and Training Curves", use_container_width=True)
+    else:
+        st.warning(f"Evaluation curves not found at: {evaluation_img_path}")
+    st.markdown("""
+        <div class="gold-card">
+            <div class="gold-card-title">1. The confusion matrix (recorded a very good classification)</div>
+            <div class="gold-card-text">
+                <b>What we see:</b> All predictions fall perfectly on the dark blue diagonal line, with zero numbers in the white off-diagonal boxes.<br>
+                <b>The Story:</b> The model made absolutely zero mistakes on the test data.
+                It never confused an 'Angry' voice for a 'Happy' one, nor did it mix up 'Sad' and 'Neutral'. It successfully identified the unique mathematical signatures of all four emotions.
+            </div>
+        </div>
+        
+        <div class="gold-card">
+            <div class="gold-card-title">2. Accuracy & Loss Curves (shows very rapid convergence)</div>
+            <div class="gold-card-text">
+                <b>What is seen:</b> The accuracy shoots up to 100% (1.0) and the loss drops to zero within the very first 5 to 10 epochs, staying completely flat after that.<br>
+                <b>The story it tellls:</b> The model learned the patterns almost immediately. Because the Validation lines (green/orange) perfectly track the Training lines (yellow/red), we can confirm the model did not artificially memorize the data ("overfit"); it genuinely found the underlying rules for these audio files very quickly.
+            </div>
+        </div>
+        
+        <div class="gold-card">
+            <div class="gold-card-title">3. The Real-World Context (The 100% Caveat)</div>
+            <div class="gold-card-text">
+                <b>My final machine learning interpretations and nsight:</b> While a 100% score is a massive technical success for our pipeline, in real-world ML, it usually indicates that the dataset is "too perfect." The TESS dataset features professional actors speaking clearly with zero background noise. If we deployed this in a noisy environment (like a busy street) with random speakers, the accuracy would naturally drop. This proves our architecture works flawlessly, but our next MLOps phase would require training on messier, real-world data.
+            </div>
+        </div>
+    """, unsafe_allow_html=True)
+
 with tab3:
     st.header("Bulk Upload & Model Retraining")
-    st.write("Upload a `.zip` file organized by emotion folders to retrain the model.")
-    
     zip_file = st.file_uploader("Upload Bulk Data (.zip)", type=["zip"])
-    
     if zip_file is not None:
         if st.button("Trigger Retraining Pipeline", use_container_width=True):
-            with st.spinner("Uploading and starting background training..."):
+            with st.spinner("Processing..."):
                 files = {"file": (zip_file.name, zip_file.getvalue(), "application/zip")}
                 try:
                     response = requests.post(f"{API_URL}/retrain", files=files)
                     if response.status_code == 200:
                         st.success(response.json()["message"])
-                        st.toast('Retraining triggered!', icon='🔄')
                     else:
-                        st.error("Failed to trigger retraining.")
+                        st.error("Failed.")
                 except Exception as e:
-                    st.error(f"Connection failed: {e}")
+                    st.error(f"Error: {e}")
 
-# --- Tab 4: System Health ---
 with tab4:
     st.header("Model Server Health")
-    st.write("Live telemetry from the FastAPI backend.")
-    
     if st.button("Ping Server for Status", use_container_width=True):
         try:
             response = requests.get(f"{API_URL}/health")
             if response.status_code == 200:
                 data = response.json()
                 c1, c2, c3 = st.columns(3)
-                with c1:
-                    st.markdown(f'<div class="health-box"><div class="health-value">{data["status"].split()[0]}</div><div class="health-label">Status</div></div>', unsafe_allow_html=True)
-                with c2:
-                    st.markdown(f'<div class="health-box"><div class="health-value">{data["uptime_minutes"]}</div><div class="health-label">Uptime (Mins)</div></div>', unsafe_allow_html=True)
-                with c3:
-                    st.markdown(f'<div class="health-box"><div class="health-value">{data["uptime_seconds"]}</div><div class="health-label">Uptime (Secs)</div></div>', unsafe_allow_html=True)
-            else:
-                st.error("API error.")
+                with c1: st.markdown(f'<div class="health-box"><div class="health-value">{data["status"].split()[0]}</div><div class="health-label">Status</div></div>', unsafe_allow_html=True)
+                with c2: st.markdown(f'<div class="health-box"><div class="health-value">{data["uptime_minutes"]}</div><div class="health-label">Uptime (Mins)</div></div>', unsafe_allow_html=True)
+                with c3: st.markdown(f'<div class="health-box"><div class="health-value">{data["uptime_seconds"]}</div><div class="health-label">Uptime (Secs)</div></div>', unsafe_allow_html=True)
         except Exception as e:
-            st.error(f"Cannot connect to API: {e}")
+            st.error(f"Offline: {e}")

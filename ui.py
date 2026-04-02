@@ -94,7 +94,7 @@ with tab1:#prediction tab
     st.header("Predict a Single Audio File")
     st.write("Upload a .wav file to hear it and predict the emotion.")
     
-    uploaded_file = st.file_uploader("Upload an audio file", type=["wav"], key="predict_upload")
+    uploaded_file = st.file_uploader("Upload an audio file", type=["wav", "ogg"], key="predict_upload")
     
     if uploaded_file is not None:
         st.audio(uploaded_file, format="audio/wav")
@@ -121,7 +121,7 @@ with tab2:
     st.subheader("🎵 Dynamic Audio Analysis")
     st.markdown("Upload any audio file to see its 'Sound DNA' (Waveform, Spectrogram, and MFCCs).")
 
-    eda_file = st.file_uploader("Upload a .wav file for visual analysis", type=['wav'], key="eda_visuals")
+    eda_file = st.file_uploader("Upload a .wav file for visual analysis", type=['wav', 'ogg'], key="eda_visuals")
 
     if eda_file is not None:
         y, sr = librosa.load(eda_file, duration=2.5)

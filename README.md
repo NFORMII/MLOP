@@ -12,7 +12,7 @@ kaggledataset: https://www.kaggle.com/datasets/ejlok1/toronto-emotional-speech-s
 ## Live Cloud Deployment
 * **Frontend UI (Streamlit):** [https://mlop-audio-ui.onrender.com/](https://mlop-audio-ui.onrender.com/)
 * **Backend API (FastAPI):** [https://mlop-audio-backend.onrender.com/docs](https://mlop-audio-backend.onrender.com/docs)
-* **Video Demonstration:**[https://youtu.be/6A95_HM7FXE]
+* **Video Demonstration:**[https://youtu.be/DtaWPg_NPLI]
 * **github repositery**[https://youtu.be/6A95_HM7FXE]
 * 
 

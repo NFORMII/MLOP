@@ -2,7 +2,7 @@ import streamlit as st
 import requests
 
 # The URL for FastAPI backend is running
-API_URL = "https://mlop-audio-backend.onrender.com"
+API_URL = 'https://ml-audio-backend.onrender.com'
 
 #'http://127.0.0.1:8000/'
 

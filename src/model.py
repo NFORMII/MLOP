@@ -43,12 +43,12 @@ def retrain_pipeline(zip_path: str):
 
         print(">>> Training complete. Saving model.h5 to disk...")
         
-        # Fine-tune the model
+        # fine-tunning the model
         model.fit(X_new_scaled, y_new, epochs=10, batch_size=32, verbose=1)
         model.save(MODEL_PATH)
         print("Core model successfully updated and saved!")
         print("BACKGROUND TASK FULLY COMPLETE!")
 
-    # Cleanup
+    # Cleaning up
     shutil.rmtree(extract_dir)
     os.remove(zip_path)

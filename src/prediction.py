@@ -4,8 +4,8 @@ from src.preprocessing import extract_features
 
 def make_prediction(file_path):
     """
-    End-to-end prediction: Extracts features, scales them, 
-    asks the model for a prediction, and decodes the result.
+    End-to-end prediction: extracts features, scales them, 
+    asks the model for a prediction, and then decodes the result.
     """
   
     features = extract_features(file_path)

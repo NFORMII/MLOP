@@ -7,7 +7,9 @@ import numpy as np
 import os
 
 #fastAPI backend URL
-API_URL = 'http://127.0.0.1:8000' 
+API_URL = 'https://ml-audio-backend.onrender.com' 
+
+#http://127.0.0.1:8000
 
 st.set_page_config(page_title="TESS Audio AI", layout="wide", initial_sidebar_state="collapsed")
 

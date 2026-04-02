@@ -56,23 +56,54 @@ async def predict_emotion(file: UploadFile = File(...)):
         if os.path.exists(temp_file_path):
             os.remove(temp_file_path)
 
+
+
 @app.post("/retrain")
 async def trigger_retraining(background_tasks: BackgroundTasks, file: UploadFile = File(...)):
     """Rubric Requirement: Bulk data upload and trigger retraining"""
+    print(f"========== RETRAINING REQUEST RECEIVED ==========")
+    print(f"File uploaded: {file.filename}")
+
     if not file.filename.endswith('.zip'):
+        print(" Error: File is not a .zip archive.")
         return {"error": "Please upload a .zip file containing folders of audio files."}
         
     temp_zip_path = f"temp_bulk_{file.filename}"
     
     # 1. Save the uploaded zip temporarily
+    print(f"Step 1: Saving uploaded zip file to {temp_zip_path}...")
     with open(temp_zip_path, "wb") as buffer:
         shutil.copyfileobj(file.file, buffer)
+    print(" Success! Zip file saved temporarily.")
     
     # 2. Send the heavy lifting to model.py via background tasks
-    # We pass the temp_zip_path to retrain_pipeline, which will unzip and train
+    print(f"Step 2: Handing off {temp_zip_path} to the background retraining task...")
     background_tasks.add_task(retrain_pipeline, temp_zip_path)
+    
+    print(f"========== API RESPONSE SENT (TRAINING CONTINUES IN BACKGROUND) ==========")
     
     return {
         "message": "Retraining successfully triggered! The AI is updating in the background.",
         "status": "Processing"
     }
+
+# @app.post("/retrain")
+# async def trigger_retraining(background_tasks: BackgroundTasks, file: UploadFile = File(...)):
+#     """Rubric Requirement: Bulk data upload and trigger retraining"""
+#     if not file.filename.endswith('.zip'):
+#         return {"error": "Please upload a .zip file containing folders of audio files."}
+        
+#     temp_zip_path = f"temp_bulk_{file.filename}"
+    
+#     # 1. Save the uploaded zip temporarily
+#     with open(temp_zip_path, "wb") as buffer:
+#         shutil.copyfileobj(file.file, buffer)
+    
+#     # 2. Send the heavy lifting to model.py via background tasks
+#     # We pass the temp_zip_path to retrain_pipeline, which will unzip and train
+#     background_tasks.add_task(retrain_pipeline, temp_zip_path)
+    
+#     return {
+#         "message": "Retraining successfully triggered! The AI is updating in the background.",
+#         "status": "Processing"
+#     }

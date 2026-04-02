@@ -23,6 +23,7 @@ def retrain_pipeline(zip_path: str):
     
     with zipfile.ZipFile(zip_path, 'r') as zip_ref:
         zip_ref.extractall(extract_dir)
+        print(">>> BACKGROUND TASK STARTED: Unzipping files...")
         
     new_data, new_labels = [], []
     for root, dirs, files in os.walk(extract_dir):
@@ -32,16 +33,21 @@ def retrain_pipeline(zip_path: str):
                 file_path = os.path.join(root, file)
                 new_data.append(extract_features(file_path))
                 new_labels.append(emotion)
+
+                print("Feature extraction complete. Loading model and fitting new data...")
     
     if len(new_data) > 0:
         X_new = np.array(new_data)
         y_new = encoder.transform(new_labels) 
         X_new_scaled = scaler.transform(X_new) 
+
+        print(">>> Training complete. Saving model.h5 to disk...")
         
         # Fine-tune the model
         model.fit(X_new_scaled, y_new, epochs=10, batch_size=32, verbose=1)
         model.save(MODEL_PATH)
         print("Core model successfully updated and saved!")
+        print("BACKGROUND TASK FULLY COMPLETE!")
 
     # Cleanup
     shutil.rmtree(extract_dir)

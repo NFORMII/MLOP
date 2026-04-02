@@ -4,6 +4,10 @@ import requests
 # The URL for FastAPI backend is running
 API_URL = "https://mlop-audio-backend.onrender.com"
 
+#'http://127.0.0.1:8000/'
+
+#
+
 
 st.set_page_config(page_title="TESS Audio AI", layout="wide", initial_sidebar_state="collapsed")
 
@@ -227,4 +231,4 @@ with tab4:
             else:
                 st.error("API is returning an error.")
         except requests.exceptions.ConnectionError:
-            st.error("💥CRITICAL: Cannot connect to the API. Is your FastAPI server running?")
+            st.error("💥Boomm CRITICAL: Cannot connect to the API. Is your FastAPI server running?")

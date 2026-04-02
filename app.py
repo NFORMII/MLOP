@@ -2,106 +2,106 @@ from fastapi import FastAPI, File, UploadFile, BackgroundTasks
 import time
 import shutil
 import os
+import numpy as np
+import uvicorn
 
-
-
+# Internal Imports
 from src.prediction import make_prediction
 from src.model import retrain_pipeline 
 
-# Initializing the Web Server
-app = FastAPI(title="TESS MLOps Pipeline API")
-START_TIME = time.time() #helps trackacks server uptime
+# 1. Initialize the Web Server
+app = FastAPI(title="TESS MLOps Emotion Recognition API")
+START_TIME = time.time() # Tracks server uptime for the health check
 
 @app.get("/")
 def read_root():
-    return {"message": "Welcome to the Emotion Recognition API! Go to /docs to test it."}
+    return {
+        "message": "Welcome to the Emotion Recognition API!",
+        "documentation": "/docs",
+        "status": "Online"
+    }
 
 @app.get("/health")
 def health_check():
-    """Rubric Requirement: Model up-time and health status"""
+    """
+    Rubric Requirement: Model up-time and health status.
+    Provides monitoring data for DevOps/MLOps oversight.
+    """
     uptime_seconds = int(time.time() - START_TIME)
     return {
         "status": "Healthy 🟢",
         "uptime_seconds": uptime_seconds,
-        "uptime_minutes": round(uptime_seconds / 60, 2)
+        "uptime_minutes": round(uptime_seconds / 60, 2),
+        "api_version": "1.0.0"
     }
 
 @app.post("/predict")
 async def predict_emotion(file: UploadFile = File(...)):
-    """Rubric Requirement: Predict one datapoint from sound"""
+    """
+    Rubric Requirement: Predict one datapoint from sound.
+    Handles the ingestion of .wav files and returns JSON predictions.
+    """
+    # 1. Create a unique temporary path for the uploaded file
     temp_file_path = f"temp_{file.filename}"
     
-    #temporarily save uploaded file
+    # 2. Save the uploaded binary stream to a physical file for Librosa to read
     with open(temp_file_path, "wb") as buffer:
         shutil.copyfileobj(file.file, buffer)
     
     try:
-    
+        # 3. Trigger the prediction logic from src/prediction.py
         result = make_prediction(temp_file_path)
         
-        #ensuring that result is presented as dictionary
-        if isinstance(result, dict):
-            return {
-                "filename": file.filename,
-                "predicted_emotion": result.get("predicted_emotion"),
-                "confidence": str(round(result.get("confidence") * 100, 2)) + '%'
-            }
-        else:
-            return {
-                "filename": file.filename,
-                "error": "Invalid result format from prediction model"
-            }
+        # 4. Safe formatting of the confidence score
+        raw_confidence = result.get("confidence", 0)
+        formatted_confidence = f"{round(float(raw_confidence) * 100, 2)}%"
+        
+        return {
+            "filename": file.filename,
+            "predicted_emotion": result.get("predicted_emotion"),
+            "confidence": formatted_confidence,
+            "status": "success"
+        }
+        
+    except Exception as e:
+        return {
+            "filename": file.filename,
+            "status": "error",
+            "message": str(e)
+        }
     finally:
-        #always cleanup
+        # 5. MLOps Best Practice: Always cleanup temporary files to prevent disk bloat
         if os.path.exists(temp_file_path):
             os.remove(temp_file_path)
 
-
-
 @app.post("/retrain")
 async def trigger_retraining(background_tasks: BackgroundTasks, file: UploadFile = File(...)):
-    """Bulk data upload and trigger retraining"""
-    print(f"========== RETRAINING REQUEST RECEIVED ==========")
-    print(f"File uploaded: {file.filename}")
-
+    """
+    Rubric Requirement: Bulk data upload and trigger retraining.
+    Uses BackgroundTasks to keep the API responsive while the model trains.
+    """
+    print(f"--- RETRAINING REQUEST RECEIVED ---")
+    
     if not file.filename.endswith('.zip'):
-        print(" Error: File is not a .zip archive.")
-        return {"error": "Please upload a .zip file containing folders of audio files."}
+        return {"error": "Invalid format. Please upload a .zip file containing labeled folders."}
         
     temp_zip_path = f"temp_bulk_{file.filename}"
     
-    #temporarily saving the .zip file
-    print(f"Step 1: Saving uploaded zip file to {temp_zip_path}...")
+    # Save the bulk dataset temporarily
     with open(temp_zip_path, "wb") as buffer:
         shutil.copyfileobj(file.file, buffer)
-    print(" Success! Zip file saved temporarily.")
     
-    #sending the heavy lifting to model.py through the background tasks
-    print(f"Step 2: Handing off {temp_zip_path} to the background retraining task...")
+    # Hand off the heavy lifting to the background worker
+    # This prevents the client from timing out during the training process
     background_tasks.add_task(retrain_pipeline, temp_zip_path)
-    
-    print(f"========== API RESPONSE SENT (TRAINING CONTINUES IN BACKGROUND) ==========")
     
     return {
         "message": "Retraining successfully triggered! The AI is updating in the background.",
-        "status": "Processing"
+        "job_status": "Processing",
+        "file_received": file.filename
     }
 
-# @app.post("/retrain")
-# async def trigger_retraining(background_tasks: BackgroundTasks, file: UploadFile = File(...)):
-#     """Rubric Requirement: Bulk data upload and trigger retraining"""
-#     if not file.filename.endswith('.zip'):
-#         return {"error": "Please upload a .zip file containing folders of audio files."}
-        
-#     temp_zip_path = f"temp_bulk_{file.filename}"
+if __name__ == "__main__":
     
-#     
-#     with open(temp_zip_path, "wb") as buffer:
-#         shutil.copyfileobj(file.file, buffer)
-    
-#     background_tasks.add_task(retrain_pipeline, temp_zip_path)
-    
-#     return {
-#         "message": "Retraining successfully triggered! The AI is updating in the background.",
-#         "status": "Processing"
-#     }
+    # Use 0.0.0.0 to ensure the container/server is reachable externally
+    uvicorn.run(app, host="0.0.0.0", port=8000)

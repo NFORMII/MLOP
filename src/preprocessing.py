@@ -1,15 +1,14 @@
 import librosa
 import numpy as np
 
-def extract_features(file_path):
-    """
-    Takes an audio file path, reads the waveform, and extracts 
-    MFCCs, Chroma, and Mel Spectrogram features into a 1D numpy array.
-    """
+def extract_features(file_path, max_pad_len=100):
     signal, sr = librosa.load(file_path, duration=2.5)
-    mfccs = np.mean(librosa.feature.mfcc(y=signal, sr=sr, n_mfcc=13).T, axis=0)
-    stft = np.abs(librosa.stft(signal))
-    chroma = np.mean(librosa.feature.chroma_stft(S=stft, sr=sr).T, axis=0)
-    mel = np.mean(librosa.feature.melspectrogram(y=signal, sr=sr).T, axis=0)
+    mfccs = librosa.feature.mfcc(y=signal, sr=sr, n_mfcc=40)
     
-    return np.hstack([mfccs, chroma, mel])
+    pad_width = max_pad_len - mfccs.shape[1]
+    if pad_width > 0:
+        mfccs = np.pad(mfccs, pad_width=((0, 0), (0, pad_width)), mode='constant')
+    else:
+        mfccs = mfccs[:, :max_pad_len]
+        
+    return mfccs.T  # Returns shape (100, 40)

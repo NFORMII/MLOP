@@ -99,7 +99,7 @@ st.title("🎧 Speech Emotion Recognition Pipeline")
 st.markdown("*A professional MLOps architecture analyzing the Toronto Emotional Speech Set.*")
 st.markdown("---")
 
-# Create the 4 Tabs required by the Rubric
+#creating the 4 Tabs required by the Rubric
 tab1, tab2, tab3, tab4 = st.tabs([
     "🔮 Predict Emotion", 
     "📊 Data Visualizations", 
@@ -189,7 +189,7 @@ with tab3:
 with tab4:
     st.header("Model Server Health")
     st.write("Live telemetry from the FastAPI backend.")
-    st.write("") # Spacer
+    st.write("") 
     
     if st.button("Ping Server for Status", use_container_width=True):
         try:
@@ -197,7 +197,7 @@ with tab4:
             if response.status_code == 200:
                 data = response.json()
                 
-               
+            
                 col1, col2, col3 = st.columns(3)
                 
                 with col1:

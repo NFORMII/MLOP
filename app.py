@@ -4,13 +4,13 @@ import shutil
 import os
 
 
-# Import the logic from your separated modules
+
 from src.prediction import make_prediction
 from src.model import retrain_pipeline 
 
-# Initialize the Web Server
+# Initializing the Web Server
 app = FastAPI(title="TESS MLOps Pipeline API")
-START_TIME = time.time() # Tracks server uptime
+START_TIME = time.time() #helps trackacks server uptime
 
 @app.get("/")
 def read_root():
@@ -31,15 +31,15 @@ async def predict_emotion(file: UploadFile = File(...)):
     """Rubric Requirement: Predict one datapoint from sound"""
     temp_file_path = f"temp_{file.filename}"
     
-    # 1. Save the uploaded file temporarily
+    #temporarily save uploaded file
     with open(temp_file_path, "wb") as buffer:
         shutil.copyfileobj(file.file, buffer)
     
     try:
-        # 2. Delegate to prediction.py (which should handle preprocessing inside it)
+    
         result = make_prediction(temp_file_path)
         
-        # Ensure result is a dictionary
+        #ensuring that result is presented as dictionary
         if isinstance(result, dict):
             return {
                 "filename": file.filename,
@@ -52,7 +52,7 @@ async def predict_emotion(file: UploadFile = File(...)):
                 "error": "Invalid result format from prediction model"
             }
     finally:
-        # 3. Clean up the temp file
+        #always cleanup
         if os.path.exists(temp_file_path):
             os.remove(temp_file_path)
 
@@ -60,7 +60,7 @@ async def predict_emotion(file: UploadFile = File(...)):
 
 @app.post("/retrain")
 async def trigger_retraining(background_tasks: BackgroundTasks, file: UploadFile = File(...)):
-    """Rubric Requirement: Bulk data upload and trigger retraining"""
+    """Bulk data upload and trigger retraining"""
     print(f"========== RETRAINING REQUEST RECEIVED ==========")
     print(f"File uploaded: {file.filename}")
 
@@ -70,13 +70,13 @@ async def trigger_retraining(background_tasks: BackgroundTasks, file: UploadFile
         
     temp_zip_path = f"temp_bulk_{file.filename}"
     
-    # 1. Save the uploaded zip temporarily
+    #temporarily saving the .zip file
     print(f"Step 1: Saving uploaded zip file to {temp_zip_path}...")
     with open(temp_zip_path, "wb") as buffer:
         shutil.copyfileobj(file.file, buffer)
     print(" Success! Zip file saved temporarily.")
     
-    # 2. Send the heavy lifting to model.py via background tasks
+    #sending the heavy lifting to model.py through the background tasks
     print(f"Step 2: Handing off {temp_zip_path} to the background retraining task...")
     background_tasks.add_task(retrain_pipeline, temp_zip_path)
     
@@ -95,12 +95,10 @@ async def trigger_retraining(background_tasks: BackgroundTasks, file: UploadFile
         
 #     temp_zip_path = f"temp_bulk_{file.filename}"
     
-#     # 1. Save the uploaded zip temporarily
+#     
 #     with open(temp_zip_path, "wb") as buffer:
 #         shutil.copyfileobj(file.file, buffer)
     
-#     # 2. Send the heavy lifting to model.py via background tasks
-#     # We pass the temp_zip_path to retrain_pipeline, which will unzip and train
 #     background_tasks.add_task(retrain_pipeline, temp_zip_path)
     
 #     return {

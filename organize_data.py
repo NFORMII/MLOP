@@ -3,12 +3,12 @@ import shutil
 
 
 source_dir = "C:/Users\HP\Downloads/archive (7)/TESS Toronto emotional speech set data/TESS Toronto emotional speech set data" 
-# --------------------------------------------
 
-# This is where the files will go in your VS Code project
+
+
 target_dir = "data/train"
 
-# The 4 emotions we are using for the rubric
+# the 4 emotions i am using for this rubric
 emotions_map = {
     'angry': 'Angry',
     'happy': 'Happy',
@@ -18,12 +18,12 @@ emotions_map = {
 
 print(" Starting automated data organization...")
 
-# Create the target folders in VS Code
+# creating the target folders in VS Code
 for target_folder in emotions_map.values():
     os.makedirs(os.path.join(target_dir, target_folder), exist_ok=True)
 
 counters = {folder: 0 for folder in emotions_map.values()}
-max_files = 400 # grabbing 100 of each to keep your project fast and cloud-safe!
+max_files = 400 # grabbing 400 of each
 
 if not os.path.exists(source_dir):
     print(f"Error: Could not find the source folder at {source_dir}. Check your path!")

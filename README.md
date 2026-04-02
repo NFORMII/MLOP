@@ -160,8 +160,8 @@ To test the resilience and scalability of the pipeline, the API was subjected to
 
 **one(1) docker container/api instance**
   * ![Locust 1 Container Load Test](assets/docker%201.jpeg)
-                                   [](assets/docker1%20graph.jpeg)
-                                   [](assets/docker%201%20graph2.jpeg)
+    ![Locust 1 Container Load Test](assets/docker1%20graph.jpeg)
+    ![Locust 1 Container Load Test](assets/docker%201%20graph2.jpeg)
 
 * **Scaled Cluster (3 API Instances):**
   * **Average Latency:** 9,929 ms (~9.9 seconds)
@@ -169,8 +169,8 @@ To test the resilience and scalability of the pipeline, the API was subjected to
   * 
 **Three(3) docker containers**       
          ![Locust 1 Container Load Test](assets/docker%203.jpeg)
-                                   [](assets/docker%203%20graph.jpeg)
-                                   [](assets/docker%203%20graph2.jpeg)
+         ![Locust 1 Container Load Test](assets/docker%203%20graph.jpeg)
+         ![Locust 1 Container Load Test](assets/docker%203%20graph2.jpeg)
 
 **[screenshots of 3 containers running in the terminal](assets/docker%20server%20screenshots.jpeg)
 

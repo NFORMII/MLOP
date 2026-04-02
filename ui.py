@@ -7,9 +7,9 @@ import numpy as np
 import os
 
 #fastAPI backend URL
-API_URL = 'https://ml-audio-backend.onrender.com' 
+API_URL = 'http://127.0.0.1:8000' 
 
-#http://127.0.0.1:8000
+#https://ml-audio-backend.onrender.com
 
 st.set_page_config(page_title="TESS Audio AI", layout="wide", initial_sidebar_state="collapsed")
 
@@ -194,17 +194,31 @@ with tab2:
 
     st.divider()
 
+
     st.subheader("📉 Global Model Evaluation Metrics")
     st.write("Official performance results from the last training session.")
     
-    current_dir = os.path.dirname(os.path.abspath(__file__))
-
-    evaluation_img_path = os.path.join(current_dir, "assets", "model_evaluation.png")
+    # Cloud-safe path resolution
+    # os.getcwd() gets the root folder Streamlit is running from, regardless of the OS
+    base_dir = os.getcwd() 
+    evaluation_img_path = os.path.join(base_dir, "assets", "model_evaluation.png")
     
     if os.path.exists(evaluation_img_path):
         st.image(evaluation_img_path, caption="Confusion Matrix and Training Curves", use_container_width=True)
     else:
-        st.warning(f"Evaluation curves not found at: {evaluation_img_path}")
+        st.warning(f"⚠️ Evaluation curves not found at: {evaluation_img_path}")
+
+    # st.subheader("📉 Global Model Evaluation Metrics")
+    # st.write("Official performance results from the last training session.")
+    
+    # current_dir = os.path.dirname(os.path.abspath(__file__))
+
+    # evaluation_img_path = os.path.join(current_dir, "assets", "model_evaluation.png")
+    
+    # if os.path.exists(evaluation_img_path):
+    #     st.image(evaluation_img_path, caption="Confusion Matrix and Training Curves", use_container_width=True)
+    # else:
+    #     st.warning(f"Evaluation curves not found at: {evaluation_img_path}")
     st.markdown("""
         <div class="gold-card">
             <div class="gold-card-title">1. The confusion matrix (recorded a very good classification)</div>

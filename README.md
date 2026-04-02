@@ -68,6 +68,7 @@ To ensure the machine learning pipeline scales effectively under heavy traffic, 
 * **Single Container (1 API instance):**
   * Average Latency/Response Time: `5,909 ms`
   * Requests Per Second (RPS): `8.7`
+ 
 
 * **Scaled Cluster (3 API instances):**
   * Average Latency/Response Time: `9,929 ms`
@@ -98,14 +99,14 @@ Markdown
 
 ---
 
-## 📋 Project Overview
+## Project Overview
 This project fulfills the requirements for building an end-to-end Machine Learning Operations (MLOps) pipeline for non-tabular data. It features a fully decoupled microservice architecture capable of processing raw `.wav` audio files, extracting mathematical acoustic features, and classifying the speaker's emotion using a Deep Neural Network. 
 
 The system includes a cloud-hosted UI, a background-task retraining pipeline, comprehensive system health monitoring, and horizontal scaling capabilities.
 
 ---
 
-## 🏗️ System Architecture & Pipeline Breakdown
+## System Architecture & Pipeline Breakdown
 The codebase is strictly modularized to separate data processing, model inference, and web serving.
 
 * `src/prediction.py`: Handles individual file processing and model inference for real-time predictions.
@@ -113,7 +114,7 @@ The codebase is strictly modularized to separate data processing, model inferenc
 * `app.py`: The FastAPI backend serving the prediction, retraining, and health endpoints.
 * `src/ui.py`: The Streamlit frontend providing an interactive dashboard.
 
-### ✨ Key Features (UI Tabs)
+### Key Features (UI Tabs)
 1. **Predict Emotion:** Users can upload a single `.wav` audio file. The system processes the audio, sends it to the FastAPI backend, and returns the predicted emotion (Angry, Happy, Sad, Neutral) with confidence scores.
 2. **Data Visualizations:** Displays the "story" of the audio data. It generates and explains three distinct visual representations of the audio features: Waveforms (amplitude over time), Mel-Spectrograms (frequency power), and MFCCs (vocal tract representation).
 3. **Retrain Model:** Supports bulk data upload via `.zip` files. When triggered, the FastAPI backend uses `BackgroundTasks` to unzip the data, extract features, fit the new data to the existing `.h5` model, and save the updated weights—all without blocking the main thread or freezing the UI.
@@ -121,7 +122,7 @@ The codebase is strictly modularized to separate data processing, model inferenc
 
 ---
 
-## 🧠 Machine Learning Model & Evaluation
+## Machine Learning Model & Evaluation
 The core model is a Sequential Deep Neural Network built with TensorFlow/Keras. 
 
 **Feature Extraction:**
@@ -142,22 +143,51 @@ Initial iterations of the model suffered from "mode collapse" (predicting a sing
 
 ---
 
-## ⚖️ Load Testing & Scaling (Locust)
+## Load testing & scaling (Locust)
 To ensure the machine learning pipeline scales effectively under heavy traffic, we simulated a flood of requests using Locust (100 concurrent users, spawn rate of 10/sec). We compared the performance of a single Dockerized API container against a horizontally scaled cluster of three containers.
 
-* **Single Container (1 API instance):**
-  * Average Latency/Response Time: `27,248 ms`
-  * Requests Per Second (RPS): `3.5`
+*### 🚀 Load Testing Results: Local Scaling
 
-* **Scaled Cluster (3 API instances):**
-  * Average Latency/Response Time: `27,982 ms`
-  * Requests Per Second (RPS): `4.5`
+To test the resilience and scalability of the pipeline, the API was subjected to heavy concurrent traffic using Locust. Both tests maintained a perfect **0% failure rate**, proving the stability of the FastAPI Docker deployment.
 
-**Conclusion:** By horizontally scaling the Docker containers, the system successfully distributed the heavy computational load. While local hardware CPU bottlenecks kept the overall aggregated latency stable, the scaled cluster successfully increased the system's throughput (jumping from 3.5 to 4.5 Requests Per Second) and decreased the specific latency of the `/predict` ML endpoint. This proves the architecture is robust, fault-tolerant (0% failures), and production-ready for horizontal scaling in a dedicated cloud environment.
+* **Single Container (1 API Instance):**
+  * **Average Latency:** 5,909 ms (~5.9 seconds)
+  * **Throughput:** 8.7 Requests Per Second (RPS)
 
----
+**LOCUST SCREENSHOTS FOR GRAPHS AND STATISTICS FOR I DOCKER CONTINER VERSUS 3 DOCKER CONTINERS**
 
-## 💻 Local Setup & Docker Deployment
+**one(1) docker container/api instance**
+  * ![Locust 1 Container Load Test](assets/docker%201.jpeg)
+                                   [](assets/docker1%20graph.jpeg)
+                                   [](assets/docker%201%20graph2.jpeg)
+
+* **Scaled Cluster (3 API Instances):**
+  * **Average Latency:** 9,929 ms (~9.9 seconds)
+  * **Throughput:** ~10.0 Requests Per Second (RPS)
+  * 
+**Three(3) docker containers**       
+         ![Locust 1 Container Load Test](assets/docker%203.jpeg)
+                                   [](assets/docker%203%20graph.jpeg)
+                                   [](assets/docker%203%20graph2.jpeg)
+
+**[screenshots of 3 containers running in the terminal](assets/docker%20server%20screenshots.jpeg)
+
+**insites on this:** While scaling to 3 containers increased our overall throughput (handling ~10 requests per second instead of 8.7), the average response time actually increased from 5.9 seconds to nearly 10 seconds. Because this test was run locally, the 3 Docker containers had to compete for the same physical CPU cores, causing resource contention and context switching. This proves our Docker Compose orchestration works perfectly, but highlights that true horizontal scaling requires deploying these containers to a cloud environment with dedicated, isolated hardware.
+
+
+
+### Cloud deployment & infrastructural limitations
+
+The API and Streamlit UI were successfully deployed to the cloud. 
+However, moving from local testing to a free-tier cloud environment highlighted a critical MLOps constraint: **Memory Limits**.
+
+During testing, the API occasionally experienced Out of Memory (OOM) failures. The free-tier cloud instance restricts RAM to 512MB. Because audio feature extraction (via Librosa) and deep learning inference require significant memory overhead, concurrent requests easily exceed this limit, causing the container to crash. 
+
+**Architectural Takeaways:**
+1. **Auto-Recovery:** Despite the crashes, our cloud orchestration successfully detected the failures and automatically rebooted the container within seconds.
+2. **Future Scaling:** To make this pipeline production-ready for real users, the container must be migrated to a paid tier with at least 2GB - 4GB of dedicated RAM to handle the deep learning overhead without bottlenecking.
+
+## Local Setup & Docker Deployment
 
 To run this microservice architecture locally on your machine, ensure Docker and Docker Compose are installed.
 

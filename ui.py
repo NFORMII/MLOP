@@ -195,11 +195,9 @@ with tab2:
     st.divider()
 
 
-    st.subheader("📉 Global Model Evaluation Metrics")
+    st.subheader("Global Model Evaluation Metrics 📉")
     st.write("Official performance results from the last training session.")
     
-    # Cloud-safe path resolution
-    # os.getcwd() gets the root folder Streamlit is running from, regardless of the OS
     base_dir = os.getcwd() 
     evaluation_img_path = os.path.join(base_dir, "assets", "model_evaluation.png")
     
@@ -208,7 +206,7 @@ with tab2:
     else:
         st.warning(f"⚠️ Evaluation curves not found at: {evaluation_img_path}")
 
-    # st.subheader("📉 Global Model Evaluation Metrics")
+    # st.subheader("Global Model Evaluation Metrics")
     # st.write("Official performance results from the last training session.")
     
     # current_dir = os.path.dirname(os.path.abspath(__file__))

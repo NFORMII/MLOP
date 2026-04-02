@@ -11,4 +11,4 @@ def extract_features(file_path, max_pad_len=100):
     else:
         mfccs = mfccs[:, :max_pad_len]
         
-    return mfccs.T  # Returns shape (100, 40)
+    return mfccs.T 

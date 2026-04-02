@@ -6,7 +6,7 @@ from tensorflow.keras.models import load_model
 import joblib
 from src.preprocessing import extract_features
 
-# Load the artifacts once when the module is imported
+# loading the artifacts once when the module is imported
 MODEL_PATH = "models/audio_model.h5"
 SCALER_PATH = "models/scaler.pkl"
 ENCODER_PATH = "models/encoder.pkl"

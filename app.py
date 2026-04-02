@@ -5,13 +5,13 @@ import os
 import numpy as np
 import uvicorn
 
-# Internal Imports
+
 from src.prediction import make_prediction
 from src.model import retrain_pipeline 
 
-# 1. Initialize the Web Server
+#Initializing the Web Server
 app = FastAPI(title="TESS MLOps Emotion Recognition API")
-START_TIME = time.time() # Tracks server uptime for the health check
+START_TIME = time.time() #server uptime for the health check
 
 @app.get("/")
 def read_root():
@@ -24,7 +24,7 @@ def read_root():
 @app.get("/health")
 def health_check():
     """
-    Rubric Requirement: Model up-time and health status.
+    Requirement: Model up-time and health status.
     Provides monitoring data for DevOps/MLOps oversight.
     """
     uptime_seconds = int(time.time() - START_TIME)
@@ -38,21 +38,21 @@ def health_check():
 @app.post("/predict")
 async def predict_emotion(file: UploadFile = File(...)):
     """
-    Rubric Requirement: Predict one datapoint from sound.
+    Requirement: Predict one datapoint from sound.
     Handles the ingestion of .wav files and returns JSON predictions.
     """
-    # 1. Create a unique temporary path for the uploaded file
+   
     temp_file_path = f"temp_{file.filename}"
     
-    # 2. Save the uploaded binary stream to a physical file for Librosa to read
+  
     with open(temp_file_path, "wb") as buffer:
         shutil.copyfileobj(file.file, buffer)
     
     try:
-        # 3. Trigger the prediction logic from src/prediction.py
+        #Triggering the prediction logic from src/prediction.py
         result = make_prediction(temp_file_path)
         
-        # 4. Safe formatting of the confidence score
+        # formatting of the confidence score
         raw_confidence = result.get("confidence", 0)
         formatted_confidence = f"{round(float(raw_confidence) * 100, 2)}%"
         
@@ -70,7 +70,7 @@ async def predict_emotion(file: UploadFile = File(...)):
             "message": str(e)
         }
     finally:
-        # 5. MLOps Best Practice: Always cleanup temporary files to prevent disk bloat
+       
         if os.path.exists(temp_file_path):
             os.remove(temp_file_path)
 
@@ -87,12 +87,11 @@ async def trigger_retraining(background_tasks: BackgroundTasks, file: UploadFile
         
     temp_zip_path = f"temp_bulk_{file.filename}"
     
-    # Save the bulk dataset temporarily
+    # Saving the bulk dataset temporarily
     with open(temp_zip_path, "wb") as buffer:
         shutil.copyfileobj(file.file, buffer)
     
-    # Hand off the heavy lifting to the background worker
-    # This prevents the client from timing out during the training process
+    # Hand off the heavy lifting to the background worker this will help prevent the client from timing out during the training process
     background_tasks.add_task(retrain_pipeline, temp_zip_path)
     
     return {
@@ -103,5 +102,5 @@ async def trigger_retraining(background_tasks: BackgroundTasks, file: UploadFile
 
 if __name__ == "__main__":
     
-    # Use 0.0.0.0 to ensure the container/server is reachable externally
+    # using 0.0.0.0 to ensure the container/server is reachable externally
     uvicorn.run(app, host="0.0.0.0", port=8000)

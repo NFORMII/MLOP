@@ -1,9 +1,18 @@
 # 🎙️ Audio Emotion Recognition: End-to-End MLOps Pipeline
 
+* **Myy Dataset:** 
+*Downloaded dataset: https://drive.google.com/drive/folders/1uYDcu6i7tFX1HwEWEvXnAtuFg8GV_g9T 
+kaggledataset: https://www.kaggle.com/datasets/ejlok1/toronto-emotional-speech-set-tess 
+* 
+* This project utilizes the **Toronto Emotional Speech Set (TESS)**, a curated collection ofnon tabular, high-quality `.wav` audio files designed specifically for Speech Emotion Recognition (SER) tasks. 
+* The dataset features professional actresses reciting a set of target words across distinct emotional categories (including Anger, Happiness, Sadness, and Neutrality).
+*  Because these audio samples were recorded in a highly controlled, noise-free studio environment, they provide an exceptionally clean baseline for our pipeline. 
+*  This high fidelity allows our feature extraction architecture to precisely isolate underlying biological vocal tract patterns—such as Mel-Frequency Cepstral Coefficients (MFCCs) and Mel-Spectrograms—enabling the deep learning model to learn true emotional signatures without the interference of background static.
+
 ## Live Cloud Deployment
 * **Frontend UI (Streamlit):** [https://mlop-audio-ui.onrender.com/](https://mlop-audio-ui.onrender.com/)
 * **Backend API (FastAPI):** [https://mlop-audio-backend.onrender.com/docs](https://mlop-audio-backend.onrender.com/docs)
-* **🎥 Video Demonstration:** [INSERT YOUR YOUTUBE LINK HERE]
+* **Video Demonstration:** [INSERT YOUR YOUTUBE LINK HERE]
 
 
 ## The project Overview

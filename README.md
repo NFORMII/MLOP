@@ -66,12 +66,12 @@ To ensure the machine learning pipeline scales effectively under heavy traffic, 
  We compared the performance of a single Dockerized API container against a horizontally scaled cluster of three containers.
 
 * **Single Container (1 API instance):**
-  * Average Latency/Response Time: `27,248 ms`
-  * Requests Per Second (RPS): `3.5`
+  * Average Latency/Response Time: `5,909 ms`
+  * Requests Per Second (RPS): `8.7`
 
 * **Scaled Cluster (3 API instances):**
-  * Average Latency/Response Time: `27,982 ms`
-  * Requests Per Second (RPS): `4.5`
+  * Average Latency/Response Time: `9,929 ms`
+  * Requests Per Second (RPS): `10.0`
 
 **Conclusion:** By horizontally scaling the Docker containers, the system successfully distributed the heavy computational load.
  While local hardware CPU bottlenecks kept the overall aggregated latency stable, the scaled cluster successfully increased the system's throughput (jumping from 3.5 to 4.5 Requests Per Second) and decreased the specific latency of the `/predict` ML endpoint.
